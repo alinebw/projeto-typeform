@@ -8,11 +8,12 @@ from validation import validate_typeform_signature
 # Importar funções do database.py
 from database import (
     get_db_connection,
+    insert_checklist,
+    insert_avaliacao,
     insert_entregavel,
     ensure_pergunta_exists,
     insert_resposta,
-    insert_avaliacao,
-    insert_checklist
+    log_processamento
 )
 
 # Carregar variáveis de ambiente
@@ -35,21 +36,32 @@ def typeform_webhook():
         
     # Processar payload do webhook
     data = request.json
-    print('Webhook recebido com sucesso:', data)
+    if not data:
+        abort(400, 'Payload vazio ou inválido')
+    
+    # Exibir payload recebido para depuração
+        print('Webhook recebido com sucesso:', data)
     
     try:
+        # Conectar ao banco de dados
         connection = get_db_connection()
-        with connection:
+        
+        with connection: #Gerenciar transação de forma explícita
             with connection.cursor() as cursor:
                 # Extrair dados principais do payload
                 form_response = data.get('form_response', {})
-                token = form_response.get('token')
-                submitted_at = form_response.get('submitted_at')
+                event_id= form_response.get('event_id') # ID do evento (id_entregavel)
+                response_token = form_response.get('token') # ID da resposta
+                submitted_at = form_response.get('submitted_at') # Data de envio
+                form_id = form_response.get('form_id')  # ID do formulário (id_typeform)
                 hidden_fields = form_response.get('hidden', {})
-                id_checklist = hidden_fields.get('checklist')
-                id_avaliacao = hidden_fields.get('avaliacao')
-                form_id = form_response.get('form_id')
-                respondent_name = None  # Ajuste se necessário
+                id_checklist = hidden_fields.get('checklist') # ID da turma no hidden field
+                id_avaliacao = hidden_fields.get('avaliacao') # ID da avaliação do hidden field
+                comentario_obrigatorio = form_response.get('comentario_obrigatorio', None)
+                comentario_opcional = form_response.get('comentario_opcional', None)
+                respondent_name = None  # Nome do respondente opcional
+                
+                
 
                 # Inserir na tabela 'checklists' se necessário
                 if id_checklist:
@@ -62,7 +74,7 @@ def typeform_webhook():
                     insert_avaliacao(connection, id_avaliacao, id_checklist, tipo_avaliacao)
 
                 # Inserir dados na tabela 'entregaveis'
-                insert_entregavel(connection, token, id_avaliacao, submitted_at, form_id, respondent_name)
+                insert_entregavel(connection, event_id, id_avaliacao, submitted_at, form_id, respondent_name)
 
                 # Processar as perguntas do payload
                 fields = form_response.get('definition', {}).get('fields', [])
@@ -97,7 +109,7 @@ def typeform_webhook():
                         texto_resposta = ', '.join(answer['choices'].get('labels', []))
 
                     # Inserir dados na tabela 'respostas'
-                    insert_resposta(connection, token, id_pergunta, id_avaliacao, valor_resposta, texto_resposta, tipo_resposta)
+                    insert_resposta(connection, response_token, id_pergunta, id_avaliacao, valor_resposta, texto_resposta, tipo_resposta)
 
         print('Dados inseridos com sucesso no banco de dados')
         return '', 200
