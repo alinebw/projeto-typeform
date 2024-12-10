@@ -173,8 +173,6 @@ def lambda_handler(event, context):
             ref = field.get('ref')
             ordem = idx  # Usar o índice do loop como ordem
 
-                # TODO: Verificar a ordem do 'ref' após o recebimento do teste com o formulário criado automaticamente.
-                # Avaliar se precisa criar um dict para ref
 
                 # Garantir que a pergunta exista
             ensure_pergunta_exists(
