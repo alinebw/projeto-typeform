@@ -105,11 +105,17 @@ def lambda_handler(event, context):
         # Extrair dados necessários do form_response
         id_entregavel = event_id
         data_recebimento = form_response.get('submitted_at')
-        variables = form_response.get('variables', {})
-        id_checklist = variables.get('checklist')
+        variables = form_response.get('variables', [])
+        id_checklist = None
         id_avaliacao = form_response.get('form_id')
         answers = form_response.get('answers', [])
         definition = form_response.get('definition', [])
+
+        # Iterar pela lista de variáveis para encontrar a chave "checklist"
+        for var in variables:
+            if var.get("key") == "checklist":
+                id_checklist = var.get("text")
+                break
 
         # Validar e processar datas
 
