@@ -16,7 +16,6 @@ Automatizar a integração de formulários Typeform com um banco de dados relaci
 
 ### Tecnologias Utilizadas
 Python: Linguagem principal para a lógica do webhook e integração com o MySQL
-Flask: Framework para gerenciar as requisições HTTP do webhook (para teste local)
 PyMySQL: Biblioteca para a conexão entre Python e o banco de dados MySQL
 Typeform: Ferramenta de formulários online para coleta de respostas
 MySQL: Banco de dados relacional hospedado na AWS
@@ -32,7 +31,7 @@ AWS Lambda: Função serverless para processamento do webhook
 
 ### Passo a Passo
 1. **Configuração do Webhook no Typeform**:
-- Acesse o painel do Typeform e crie um webhook direcionado para a função Lambda configurada na AWS
+- Acesse o painel do Typeform e crie um webhook direcionado para a URL da função Lambda configurada na AWS
 - Certifique-se de que o webhook envia os dados no formato JSON necessário para o processamento
 
 2. **Configuração do Banco de Dados:**
@@ -41,11 +40,12 @@ AWS Lambda: Função serverless para processamento do webhook
 
 3. **Implementação da Lambda:**
 
-- Configure a função AWS Lambda para processar os dados recebidos do Typeform
-- Implemente as permissões de acesso ao banco de dados MySQL na AWS
-
-4. **Execução Local com Flask** (opcional):
-- Instale as dependências listadas em requirements.txt e execute o app Flask para testar o webhook localmente antes de integrar com o AWS Lambda. O framework não será necessário no código final. Assim, sua importação e dependências devem ser removidas antes de gerar o zip que subirá na Lambda.
+- Configure a função para processar os dados recebidos do Typeform:
+     - Configurações gerais: memória, tempo limite
+     - Permissões
+     - URL da função:  métodos, origem, cabeçalhos, modo de invocação
+     - Variáveis de ambiente
+     - VPC
 
 ## Contribuição
 Para contribuir, faça um fork do projeto e envie um pull request com as alterações sugeridas.
