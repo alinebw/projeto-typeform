@@ -46,6 +46,3 @@ AWS Lambda: Função serverless para processamento do webhook
      - URL da função:  métodos, origem, cabeçalhos, modo de invocação
      - Variáveis de ambiente
      - VPC
-
-## Contribuição
-Para contribuir, faça um fork do projeto e envie um pull request com as alterações sugeridas.
