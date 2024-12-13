@@ -124,18 +124,13 @@ def lambda_handler(event, context):
                 data_recebimento, '%Y-%m-%dT%H:%M:%SZ'
             ).strftime('%Y-%m-%d %H:%M:%S')
 
-        # Conversão de tipos para garantir dados esperados
+        # Conversão de tipos
         if id_checklist is not None:
             id_checklist = str(id_checklist)
 
         if id_avaliacao is not None:
             id_avaliacao = str(id_avaliacao)
             logging.info(f"id_avaliacao recebido como string: {id_avaliacao}")
-        
-        # Mapeamento de perguntas do definition
-        fields = definition.get('fields', [])
-        id_pergunta_to_texto = {field['id']: field['title'] for field in fields}
-        logging.info(f"Mapeamento de perguntas: {id_pergunta_to_texto}")
 
         # Inserir checklist
         if id_checklist:
@@ -157,8 +152,8 @@ def lambda_handler(event, context):
             id_checklist=id_checklist
         )
        
-            # Processar as perguntas do payload
-        fields = form_response.get('definition', []).get('fields', [])
+        # Processar as perguntas do payload
+        fields = form_response.get('definition', {}).get('fields', [])
         field_id_to_title = {}
         for idx, field in enumerate(fields, start=1):
             id_pergunta = field.get('id')
@@ -173,19 +168,18 @@ def lambda_handler(event, context):
             ref = field.get('ref')
             ordem = idx  # Usar o índice do loop como ordem
 
-
-                # Garantir que a pergunta exista
+            # Garantir que pergunta existe na tabela
             ensure_pergunta_exists(
-                connection, id_pergunta, id_avaliacao, {
-                    'title': texto_pergunta,
-                    'type': tipo_pergunta,
-                    'ref': ref,
-                    'ordem': ordem
-                }
-            )
-
-                # Associar a pergunta ao entregável
-            associate_pergunta_entregavel(connection, id_pergunta, event_id)
+                    connection, id_pergunta, id_avaliacao, {
+                        'title': texto_pergunta,
+                        'type': tipo_pergunta,
+                        'ref': ref,
+                        'ordem': ordem
+                    }
+                )
+            
+             # Associar pergunta ao entregável
+            associate_pergunta_entregavel(connection, id_pergunta, id_entregavel)
 
         # Processar respostas
         for answer in answers:
@@ -196,11 +190,11 @@ def lambda_handler(event, context):
             tipo_resposta = answer.get('type')
             valor_resposta = None
             texto_resposta = None
-
+            
             # Obter o título da pergunta
             title = field_id_to_title.get(id_pergunta, '').lower()
-            # texto_pergunta = id_pergunta_to_texto.get(id_pergunta)
-            
+           
+
             # Extrair resposta com base no tipo
             if tipo_resposta == 'text':
                 texto_resposta = answer.get('text')
@@ -232,7 +226,7 @@ def lambda_handler(event, context):
         log_processamento(
             connection,
             id_entregavel,
-            'Recebido',
+            'RECEBIDO',
             'Dados recebidos e inseridos com sucesso.'
         )
 
