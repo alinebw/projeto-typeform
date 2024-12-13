@@ -2,9 +2,6 @@ import os
 import pymysql
 import logging
 from pymysql.cursors import DictCursor
-from dotenv import load_dotenv
-
-load_dotenv()
 
 def log_event(mensagem, nivel=logging.INFO):
     logging.log(nivel, mensagem)
@@ -126,7 +123,7 @@ def insert_entregavel(connection, id_entregavel, id_avaliacao, data_recebimento,
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
                 # Validação de dados
-                validate_data("id_entregavel", id_entregavel, str, max_length=255)
+                validate_data("id_entregavel", id_entregavel, str, 255)
                 validate_data("id_avaliacao", id_avaliacao, str, max_length=45)
 
                 cursor.execute(sql_insert, (
@@ -160,8 +157,8 @@ def ensure_pergunta_exists(connection, id_pergunta, id_avaliacao, field):
                 tipo_pergunta = field.get('type')
                 ordem = field.get('ordem', 0)
                 ref = field.get('ref')
-                
-                # Validação e ajuste de texto_pergunta
+
+            # Validação e ajuste de texto_pergunta
                 if not texto_pergunta:  # Trata valores nulos ou vazios
                     texto_pergunta = "Pergunta não especificada"  # Valor padrão
 
@@ -172,7 +169,7 @@ def ensure_pergunta_exists(connection, id_pergunta, id_avaliacao, field):
                     id_pergunta, id_avaliacao, texto_pergunta,
                     tipo_pergunta, ordem, ref
                 ))
-                log_event(f"Pergunta {id_pergunta} inserida com sucesso com texto '{texto_pergunta}'.")
+                log_event(f"Pergunta {id_pergunta} inserida com sucesso.")
             else:
                 log_event(f"Pergunta {id_pergunta} já existe. Nenhuma inserção realizada.")
 
@@ -238,8 +235,3 @@ def log_processamento(connection, id_entregavel, status, mensagem):
     except Exception as e:
         log_event(f"Erro ao registrar log para entregável {id_entregavel}: {e}", logging.ERROR)
         raise
-
-#Função para log de eventos gerais
-def log_event(mensagem, nivel=logging.INFO):
-    # Registrar logs reais
-    logging.log(nivel, mensagem)
